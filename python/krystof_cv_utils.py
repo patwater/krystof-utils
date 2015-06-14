@@ -5,29 +5,21 @@ import os
 import cv2
 import numpy as np
 
+from krystof_utils import MSG, TODO
 
-def superimpose_mask_on_image(mask, image, color_delta = [20, -20, -20], slow = False):
+
+def superimpose_mask_on_image(mask, image, color_delta = [20, -20, -20]):
     # superimpose mask on image, the color change being controlled by color_delta
     # TODO: currently only works on 3-channel, 8 bit images and 1-channel, 8 bit masks
 
-    # fast, but can't handle overflows
-    if not slow:
-        image[:,:,0] = image[:,:,0] + color_delta[0] * (mask[:,:,0] / 255)
-        image[:,:,1] = image[:,:,1] + color_delta[1] * (mask[:,:,0] / 255)
-        image[:,:,2] = image[:,:,2] + color_delta[2] * (mask[:,:,0] / 255)
+    image = image.astype(np.int16)
 
-    # slower, but no issues with overflows
-    else:
-        rows, cols = image.shape[:2]
-        for row in xrange(rows):
-            for col in xrange(cols):
-                if mask[row, col, 0] > 0:
-                    image[row, col, 0] = min(255, max(0, image[row, col, 0] + color_delta[0]))
-                    image[row, col, 1] = min(255, max(0, image[row, col, 1] + color_delta[1]))
-                    image[row, col, 2] = min(255, max(0, image[row, col, 2] + color_delta[2]))
+    image[:, :, 0] = np.clip(image[:, :, 0] + color_delta[0] * (mask[:, :, 0] / 255), 0, 255)
+    image[:, :, 1] = np.clip(image[:, :, 1] + color_delta[1] * (mask[:, :, 0] / 255), 0, 255)
+    image[:, :, 2] = np.clip(image[:, :, 2] + color_delta[2] * (mask[:, :, 0] / 255), 0, 255)
 
-    return
-
+    image = image.astype(np.uint8)
+    return image
 
 
 
@@ -42,14 +34,21 @@ class Image_wrapper(object):
         self.path         = None # path to the image file
         self.debug_prefix = None # prefix to use when saving debug images
 
-        self.in_img = None
+        self.in_img = None # input image (color)
+        self.in_gs  = None # input image (grayscale)
 
 
     def open(self, path):
         # open the image pointed to by path into self.in_img
         self.path         = path
-        self.in_img       = cv2.imread(self.path)
+        self.in_img       = cv2.imread(self.path, )
         self.debug_prefix = os.path.join('debug', os.path.split(self.path)[1])[:-4]
+
+        # get a grayscale version of the image
+        if self.in_img.shape[2] > 1:
+            self.in_gs = cv2.cvtColor(self.in_img, cv2.COLOR_BGR2GRAY)
+        else:
+            self.in_gs = self.in_img.copy()
 
 
     def save_debug_img(self, di, postfix):
