@@ -23,6 +23,25 @@ def superimpose_mask_on_image(mask, image, color_delta = [20, -20, -20]):
 
 
 
+def get_std_dev_image(image, side = 5):
+    # get the standard deviation for each pixel w.r.t. a side x side window
+
+    # work with floats
+    imgf = image.astype(np.float32)
+
+    # get the mean
+    mean = cv2.blur(imgf, (side, side))
+
+    # get the mean of the squared image
+    mean_sq = cv2.blur(cv2.multiply(imgf, imgf), (side, side))
+
+    # std deviation = sqrt( expectation(x^2) - (expecation(x)^2) )
+    std = cv2.sqrt(mean_sq - cv2.multiply(mean, mean))
+
+    return std
+
+
+
 class Image_wrapper(object):
     '''
     Wrapper around cv2's image
