@@ -90,6 +90,7 @@ class Sliding_window(object):
     def __init__(self):
         self.WINDOW_SIZE = 256 #128 # pixels
         self.STEP        = 128 # 32 # pixels
+        self.MAXSCALE    =   2 # image gets shrunk at most 1/this
 
         self.img   = None
         self.scale = 1
@@ -126,7 +127,7 @@ class Sliding_window(object):
         self.xmax += self.STEP
 
         # next row?
-        if self.xmax > self.cols:
+        if self.xmax * self.scale > self.cols:
             self.xmin  = 0
             self.xmax  = self.WINDOW_SIZE
             self.ymin += self.STEP
@@ -137,14 +138,19 @@ class Sliding_window(object):
         #           self.cols, self.rows))
 
         # next scale?
-        if self.ymax > self.rows:
+        if self.ymax * self.scale > self.rows:
 
-            # TODO
-            
+            self.scale *= 2
+
             # are we done?
-            return None
+            if self.scale > self.MAXSCALE:
+                return None
 
+            self.xmin  = 0
+            self.xmax  = self.WINDOW_SIZE
+            self.ymin  = 0
+            self.ymax  = self.WINDOW_SIZE
 
         # return the current region
-        return [self.xmin, self.xmax, self.ymin, self.ymax]
+        return [x * self.scale for x in [self.xmin, self.xmax, self.ymin, self.ymax]]
 
