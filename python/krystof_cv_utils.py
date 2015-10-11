@@ -1,5 +1,5 @@
 # utility stuff related to computer vision
-# uses opencv2 (cv2)
+# uses opencv (cv2)
 
 import os
 import cv2
@@ -79,3 +79,72 @@ class Image_wrapper(object):
     def get_blank_mask(self):
         # get a mask of all zeros of the same dimensions as self.in_img
         return np.zeros((self.in_img.shape[0], self.in_img.shape[1], 1), np.uint8)
+
+
+
+class Sliding_window(object):
+    # Given an input image, generates regions on it
+    # Multi-scale sliding window
+
+    # TODO: allow user to set params
+    def __init__(self):
+        self.WINDOW_SIZE = 256 #128 # pixels
+        self.STEP        = 128 # 32 # pixels
+
+        self.img   = None
+        self.scale = 1
+        self.xmin  = 0
+        self.xmax  = self.WINDOW_SIZE
+        self.ymin  = 0
+        self.ymax  = self.WINDOW_SIZE
+        self.rows  = 0
+        self.cols  = 0
+
+
+    def load(self, img):
+        self.img  = img
+        self.rows, self.cols = self.img.shape[:2]
+    
+        # reset state
+        self.scale = 1
+        self.xmin  = -self.STEP
+        self.xmax  = self.WINDOW_SIZE - self.STEP
+        self.ymin  = 0
+        self.ymax  = self.WINDOW_SIZE
+
+
+        
+    def get_next(self):
+        # get the next region
+        # returns the [xmin, xmax, ymin, ymax]
+
+        if self.img is None:
+            raise Exception('No image loaded')
+
+        # col
+        self.xmin += self.STEP
+        self.xmax += self.STEP
+
+        # next row?
+        if self.xmax > self.cols:
+            self.xmin  = 0
+            self.xmax  = self.WINDOW_SIZE
+            self.ymin += self.STEP
+            self.ymax += self.STEP            
+
+        #MSG('[{}, {}], [{}, {}]; image is {} x {}'.
+        #    format(self.xmin, self.ymin, self.xmax, self.ymax,
+        #           self.cols, self.rows))
+
+        # next scale?
+        if self.ymax > self.rows:
+
+            # TODO
+            
+            # are we done?
+            return None
+
+
+        # return the current region
+        return [self.xmin, self.xmax, self.ymin, self.ymax]
+
