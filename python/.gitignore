@@ -1,0 +1,6 @@
+*.pyc
+
+processed.txt
+
+debug
+raw_images
