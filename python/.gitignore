@@ -1,6 +1,9 @@
 *.pyc
 
 processed.txt
+positives.json
+negatives.json
+neutral.json
 
 debug
 raw_images
