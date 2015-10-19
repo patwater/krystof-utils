@@ -24,8 +24,9 @@ class Training_data_generator(object):
     def __init__(self):
         # path to the directories where to save positive and negative training regions
         # TODO: let user set these
-        self.POSDIR = 'positive'
-        self.NEGDIR = 'negative'
+        self.POSDIR      = 'positive'
+        self.NEGDIR      = 'negative'
+        self.NEUTRAL_DIR = 'neutral'
         
         # directory from where to read the images
         self.SOURCEDIR = 'raw_images'
@@ -130,7 +131,10 @@ class Training_data_generator(object):
                 cv2.imshow('img', di)
 
                 # record this region in this dictionary (based on user input)
-                record_dict = None 
+                record_dict = None
+
+                # copy the region into this directory (based on user input)
+                record_dir  = None
 
                 # get some valid input from the user
                 key = None
@@ -149,16 +153,19 @@ class Training_data_generator(object):
                     elif key == 65363:
                         MSG('POSITIVE')
                         record_dict = posdict
+                        record_dir  = self.POSDIR
 
                     # left  arrow: 65361 -> negative region
                     elif key == 65361:
                         MSG('negative')
                         record_dict = negdict
+                        record_dir  = self.NEGDIR
 
                     # down  arrow: 65364 -> neutral / unknown / N/A / skip
                     elif key == 65364:
                         MSG('neutral')
                         record_dict = neutraldict
+                        record_dir  = self.NEUTRAL_DIR
 
                     # not valid input: ask again
                     else:
@@ -179,6 +186,14 @@ class Training_data_generator(object):
                 if regionstring not in record_dict[fn]:
                     record_dict[fn].append(regionstring)
                 # -------------------------------------------------------
+
+                # -- save a copy of this region into the appropriate directory -
+                roi = img.in_img[region[2] : region[3], region[0] : region[1]]
+                cv2.imwrite('{}/{}-{}.jpg'.format(record_dir,
+                                                  img.filename_no_ext,
+                                                  regionstring),
+                            roi)
+                # --------------------------------------------------------------
 
                 # get the next region
                 region = sw.get_next()

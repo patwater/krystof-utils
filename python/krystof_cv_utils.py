@@ -50,8 +50,9 @@ class Image_wrapper(object):
     '''
 
     def __init__(self):
-        self.path         = None # path to the image file
-        self.debug_prefix = None # prefix to use when saving debug images
+        self.path            = None # path to the image file
+        self.debug_prefix    = None # prefix to use when saving debug images
+        self.filename_no_ext = None # filename, no path, no extension (e.g. "my-image")
 
         self.in_img = None # input image (color)
         self.in_gs  = None # input image (grayscale)
@@ -59,9 +60,10 @@ class Image_wrapper(object):
 
     def open(self, path):
         # open the image pointed to by path into self.in_img
-        self.path         = path
-        self.in_img       = cv2.imread(self.path, )
-        self.debug_prefix = os.path.join('debug', os.path.split(self.path)[1])[:-4]
+        self.path            = path
+        self.filename_no_ext = os.path.split(self.path)[1][:-4]
+        self.in_img          = cv2.imread(self.path)
+        self.debug_prefix    = os.path.join('debug', self.filename_no_ext)
 
         # get a grayscale version of the image
         if self.in_img.shape[2] > 1:
